@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TravelSplit - 日本旅遊分帳</title>
+  <style>
+    /* CSS Variables - Japanese Warm Palette */
+    :root {
+      --background: 30 40% 97%;
+      --foreground: 20 20% 18%;
+      --card: 30 30% 99%;
+      --card-foreground: 20 20% 18%;
+      --primary: 8 65% 48%;
+      --primary-foreground: 35 60% 97%;
+      --secondary: 35 45% 93%;
+      --secondary-foreground: 20 20% 18%;
+      --muted: 30 30% 92%;
+      --muted-foreground: 20 12% 50%;
+      --accent: 340 55% 62%;
+      --destructive: 0 72% 51%;
+      --success: 145 45% 42%;
+      --border: 30 25% 88%;
+      --radius: 0.75rem;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 32rem;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 6rem;
+    }
+
+    /* Header */
+    .header {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1rem;
+      background: linear-gradient(135deg, hsl(20 35% 22%), hsl(8 40% 28%));
+      margin-bottom: 1.25rem;
+    }
+
+    .header-bg {
+      position: absolute;
+      inset: 0;
+      opacity: 0.25;
+    }
+
+    .header-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .header-content {
+      position: relative;
+      z-index: 10;
+      padding: 2rem 1.5rem;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 1rem;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .brand-text h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: hsl(var(--primary-foreground));
+      letter-spacing: -0.025em;
+    }
+
+    .brand-text p {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.55);
+      font-weight: 500;
+    }
+
+    .currency-toggle {
+      display: flex;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(4px);
+      border-radius: 0.75rem;
+      padding: 0.25rem;
+    }
+
+    .currency-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .currency-btn.active {
+      background: hsl(var(--primary-foreground));
+      color: hsl(var(--foreground));
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .exchange-rate {
+      font-size: 0.6875rem;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 0.75rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(4px);
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+    }
+
+    .stat-label {
+      font-size: 0.6875rem;
+      color: rgba(255,255,255,0.55);
+      font-weight: 500;
+    }
+
+    .stat-value {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: hsl(var(--primary-foreground));
+      margin-top: 0.125rem;
+    }
+
+    /* Cards */
+    .card {
+      background: hsl(var(--card));
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.03);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: hsl(var(--card-foreground));
+    }
+
+    .card-title svg {
+      width: 1.25rem;
+      height: 1.25rem;
+      color: hsl(var(--primary));
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+
+    .btn-primary:hover {
+      background: hsl(8 65% 42%);
+    }
+
+    .btn-secondary {
+      background: hsl(var(--secondary));
+      color: hsl(var(--secondary-foreground));
+    }
+
+    .btn-secondary:hover {
+      background: hsl(35 45% 88%);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .btn-ghost:hover {
+      background: hsl(var(--muted));
+      color: hsl(var(--foreground));
+    }
+
+    .btn-sm {
+      padding: 0.375rem 0.625rem;
+      font-size: 0.8125rem;
+    }
+
+    .btn-icon {
+      padding: 0.5rem;
+    }
+
+    /* Member List */
+    .member-form {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .input {
+      flex: 1;
+      height: 2.5rem;
+      padding: 0 0.75rem;
+      border: 1px solid hsl(var(--border));
+      border-radius: 0.5rem;
+      background: hsl(var(--background));
+      font-size: 0.875rem;
+      color: hsl(var(--foreground));
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: hsl(var(--primary));
+      box-shadow: 0 0 0 2px hsl(var(--primary) / 0.1);
+    }
+
+    .input::placeholder {
+      color: hsl(var(--muted-foreground));
+    }
+
+    .members-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .member-tag {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+      background: hsl(var(--secondary));
+      border-radius: 9999px;
+    }
+
+    .member-avatar {
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .member-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: hsl(var(--secondary-foreground));
+    }
+
+    .member-actions {
+      display: flex;
+      gap: 0.25rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .member-tag:hover .member-actions {
+      opacity: 1;
+    }
+
+    .member-action-btn {
+      width: 1rem;
+      height: 1rem;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: hsl(var(--muted-foreground));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .member-action-btn:hover {
+      color: hsl(var(--primary));
+    }
+
+    .member-action-btn.delete:hover {
+      color: hsl(var(--destructive));
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 1.5rem;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+    }
+
+    /* Settlement */
+    .settlement-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: hsl(var(--background));
+      border-radius: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .settlement-party {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .settlement-party.to {
+      justify-content: flex-end;
+    }
+
+    .settlement-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: hsl(var(--card-foreground));
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .settlement-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .settlement-arrow svg {
+      width: 1rem;
+      height: 1rem;
+      color: hsl(var(--accent));
+    }
+
+    .settlement-amount {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: hsl(var(--accent));
+    }
+
+    .settlement-summary {
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+      text-align: center;
+      padding-top: 0.5rem;
+    }
+
+    .settled-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .settled-state svg {
+      width: 2.5rem;
+      height: 2.5rem;
+      color: hsl(var(--success));
+      margin-bottom: 0.5rem;
+    }
+
+    .settled-state p {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: hsl(var(--card-foreground));
+    }
+
+    .settled-state span {
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+      margin-top: 0.25rem;
+    }
+
+    /* Expense List */
+    .expense-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: hsl(var(--background));
+      border-radius: 0.75rem;
+      margin-bottom: 0.75rem;
+      transition: box-shadow 0.2s;
+    }
+
+    .expense-item:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .expense-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.75rem;
+      background: hsl(var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: hsl(var(--primary));
+      flex-shrink: 0;
+    }
+
+    .expense-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .expense-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .expense-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: hsl(var(--card-foreground));
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .expense-meta {
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+      margin-top: 0.125rem;
+    }
+
+    .expense-payer {
+      font-weight: 500;
+    }
+
+    .expense-amount {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .expense-amount-main {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: hsl(var(--card-foreground));
+    }
+
+    .expense-amount-original {
+      font-size: 0.625rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .expense-split-count {
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .expense-splitters {
+      display: flex;
+      gap: 0.25rem;
+      margin-top: 0.5rem;
+    }
+
+    .expense-splitter {
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.5625rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .expense-delete {
+      margin-top: 0.25rem;
+      padding: 0.375rem;
+      border: none;
+      background: transparent;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      color: hsl(var(--muted-foreground));
+      opacity: 0;
+      transition: all 0.2s;
+    }
+
+    .expense-item:hover .expense-delete {
+      opacity: 1;
+    }
+
+    .expense-delete:hover {
+      color: hsl(var(--destructive));
+      background: hsl(var(--destructive) / 0.1);
+    }
+
+    /* Floating Action Button */
+    .fab {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+    }
+
+    .fab-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      height: 3.5rem;
+      padding: 0 2rem;
+      border-radius: 1rem;
+      background: linear-gradient(135deg, hsl(8 65% 48%), hsl(12 60% 60%));
+      color: hsl(var(--primary-foreground));
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      box-shadow: 0 10px 30px -10px hsl(8 65% 48% / 0.4);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .fab-btn:hover {
+      box-shadow: 0 0 30px hsl(12 60% 60% / 0.3);
+      transform: scale(1.02);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
+    }
+
+    @media (min-width: 640px) {
+      .modal-overlay {
+        align-items: center;
+      }
+    }
+
+    .modal {
+      background: hsl(var(--card));
+      border-radius: 1.5rem 1.5rem 0 0;
+      width: 100%;
+      max-width: 32rem;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @media (min-width: 640px) {
+      .modal {
+        border-radius: 1rem;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      position: sticky;
+      top: 0;
+      background: hsl(var(--card));
+      z-index: 10;
+      padding: 1.5rem;
+      border-bottom: 1px solid hsl(var(--border));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: hsl(var(--card-foreground));
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: hsl(var(--card-foreground));
+      margin-bottom: 0.5rem;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .input-with-symbol {
+      position: relative;
+      flex: 1;
+    }
+
+    .input-symbol {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .input-with-symbol .input {
+      padding-left: 2rem;
+    }
+
+    .currency-selector {
+      display: flex;
+      border: 1px solid hsl(var(--border));
+      border-radius: 0.5rem;
+      background: hsl(var(--background));
+      padding: 0.125rem;
+    }
+
+    .currency-option {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem 0.625rem;
+      border-radius: 0.375rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: hsl(var(--muted-foreground));
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .currency-option.active {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+
+    .category-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.375rem;
+      padding: 0.625rem;
+      border-radius: 0.75rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      border: none;
+      background: hsl(var(--secondary));
+      color: hsl(var(--secondary-foreground));
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .category-btn.active {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .category-btn svg {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    .select {
+      width: 100%;
+      height: 2.5rem;
+      padding: 0 0.75rem;
+      border: 1px solid hsl(var(--border));
+      border-radius: 0.5rem;
+      background: hsl(var(--background));
+      font-size: 0.875rem;
+      color: hsl(var(--foreground));
+      cursor: pointer;
+    }
+
+    .select:focus {
+      outline: none;
+      border-color: hsl(var(--primary));
+      box-shadow: 0 0 0 2px hsl(var(--primary) / 0.1);
+    }
+
+    .split-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .split-all-btn {
+      font-size: 0.75rem;
+      color: hsl(var(--primary));
+      font-weight: 500;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .split-all-btn:hover {
+      text-decoration: underline;
+    }
+
+    .split-members {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .split-member-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: none;
+      background: hsl(var(--secondary));
+      color: hsl(var(--muted-foreground));
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .split-member-btn.active {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+
+    .split-per-person {
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+      margin-top: 0.5rem;
+    }
+
+    .submit-btn {
+      width: 100%;
+      height: 3rem;
+      border-radius: 0.75rem;
+      background: linear-gradient(135deg, hsl(8 65% 48%), hsl(12 60% 60%));
+      color: hsl(var(--primary-foreground));
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      box-shadow: 0 0 20px hsl(12 60% 60% / 0.3);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.2);
+      transition: all 0.3s;
+    }
+
+    .toast.success {
+      background: hsl(var(--success));
+      color: white;
+    }
+
+    .toast.error {
+      background: hsl(var(--destructive));
+      color: white;
+    }
+
+    .toast.hidden {
+      opacity: 0;
+      transform: translateY(-0.5rem);
+      pointer-events: none;
+    }
+
+    .toast-close {
+      margin-left: 0.5rem;
+      background: none;
+      border: none;
+      color: inherit;
+      opacity: 0.7;
+      cursor: pointer;
+    }
+
+    .toast-close:hover {
+      opacity: 1;
+    }
+
+    /* Sync Button */
+    .sync-section {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid hsl(var(--border));
+    }
+
+    .sync-btn {
+      width: 100%;
+      height: 2.5rem;
+      border-radius: 0.5rem;
+      background: hsl(var(--secondary));
+      color: hsl(var(--secondary-foreground));
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .sync-btn:hover {
+      background: hsl(35 45% 88%);
+    }
+
+    .sync-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Icons */
+    .icon {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    .icon-sm {
+      width: 0.875rem;
+      height: 0.875rem;
+    }
+
+    .icon-xs {
+      width: 0.75rem;
+      height: 0.75rem;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: hsl(var(--muted));
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: hsl(var(--muted-foreground) / 0.25);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: hsl(var(--muted-foreground) / 0.45);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-bg">
+        <img src="images/japan-hero.png" alt="Japan travel scenery">
+      </div>
+      <div class="header-content">
+        <div class="header-top">
+          <div class="brand">
+            <div class="brand-icon">&#x26E9;</div>
+            <div class="brand-text">
+              <h1>TravelSplit</h1>
+              <p>日本旅遊 · 分帳記帳</p>
+            </div>
+          </div>
+          <div class="currency-toggle">
+            <button class="currency-btn active" data-currency="JPY">
+              <span>&#x1F1EF;&#x1F1F5;</span> JPY
+            </button>
+            <button class="currency-btn" data-currency="HKD">
+              <span>&#x1F1ED;&#x1F1F0;</span> HKD
+            </button>
+          </div>
+        </div>
+        <p class="exchange-rate">參考匯率 1 HK$ ≈ ¥19.2</p>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <p class="stat-label">總花費</p>
+            <p class="stat-value" id="total-expenses">¥0</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">成員</p>
+            <p class="stat-value" id="member-count">0 人</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">筆數</p>
+            <p class="stat-value" id="expense-count">0 筆</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Members -->
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          旅行成員
+        </h2>
+        <button class="btn btn-primary btn-sm" id="add-member-btn">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          新增
+        </button>
+      </div>
+      <div id="member-form-container" style="display: none;">
+        <form class="member-form" id="member-form">
+          <input type="text" class="input" placeholder="輸入名字..." id="member-name-input" required>
+          <button type="submit" class="btn btn-primary btn-sm">加入</button>
+          <button type="button" class="btn btn-ghost btn-icon" id="cancel-member-btn">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </form>
+      </div>
+      <div id="members-container">
+        <p class="empty-state">還沒有成員，先加入旅伴吧</p>
+      </div>
+    </section>
+
+    <!-- Settlement -->
+    <section class="card" id="settlement-section" style="display: none;">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+          結算
+        </h2>
+      </div>
+      <div id="settlement-container"></div>
+    </section>
+
+    <!-- Expenses -->
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg>
+          花費明細
+        </h2>
+        <span class="text-sm text-muted" style="color: hsl(var(--muted-foreground)); font-size: 0.875rem;" id="expense-total-label">0 筆</span>
+      </div>
+      <div id="expenses-container">
+        <p class="empty-state">還沒有花費記錄</p>
+      </div>
+      
+      <!-- Google Sheets Sync -->
+      <div class="sync-section">
+        <button class="sync-btn" id="sync-btn">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+          同步到 Google Sheets
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Floating Action Button -->
+  <div class="fab" id="fab-container" style="display: none;">
+    <button class="fab-btn" id="add-expense-btn">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      新增花費
+    </button>
+  </div>
+
+  <!-- Expense Modal -->
+  <div class="modal-overlay" id="expense-modal" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">新增花費</h3>
+        <button class="btn btn-ghost btn-icon" id="close-modal-btn">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form class="modal-body" id="expense-form">
+        <!-- Category -->
+        <div class="form-group">
+          <label class="form-label">分類</label>
+          <div class="category-grid">
+            <button type="button" class="category-btn active" data-category="food">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16.2 7.8 4.6-3.7"/><path d="m15 12 3.5-3.5"/><path d="M4.9 19.1 12 12l4.6 4.6"/><path d="M12 12 2.3 2.3"/><path d="m12 12 9.7 9.7"/></svg>
+              餐飲
+            </button>
+            <button type="button" class="category-btn" data-category="transport">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+              交通
+            </button>
+            <button type="button" class="category-btn" data-category="hotel">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/><path d="m9 16 .348-.24c1.465-1.013 3.84-1.013 5.304 0L15 16"/><path d="M8 7h.01"/><path d="M16 7h.01"/><path d="M12 7h.01"/><path d="M12 11h.01"/><path d="M16 11h.01"/><path d="M8 11h.01"/><path d="M10 22v-5.76a2 2 0 0 1 1.45-1.92l5-1.43A2 2 0 0 0 18 10.76V6"/></svg>
+              住宿
+            </button>
+            <button type="button" class="category-btn" data-category="ticket">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
+              門票
+            </button>
+            <button type="button" class="category-btn" data-category="shopping">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              購物
+            </button>
+            <button type="button" class="category-btn" data-category="other">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              其他
+            </button>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label">描述</label>
+          <input type="text" class="input" placeholder="例：拉麵、新幹線..." id="expense-description" required>
+        </div>
+
+        <!-- Amount -->
+        <div class="form-group">
+          <label class="form-label">金額</label>
+          <div class="form-row">
+            <div class="input-with-symbol">
+              <span class="input-symbol" id="currency-symbol">¥</span>
+              <input type="number" class="input" placeholder="0" min="0" step="1" id="expense-amount" required>
+            </div>
+            <div class="currency-selector">
+              <button type="button" class="currency-option active" data-currency="JPY">&#x1F1EF;&#x1F1F5; JPY</button>
+              <button type="button" class="currency-option" data-currency="HKD">&#x1F1ED;&#x1F1F0; HKD</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paid By -->
+        <div class="form-group">
+          <label class="form-label">誰付的</label>
+          <select class="select" id="expense-paid-by" required></select>
+        </div>
+
+        <!-- Split Among -->
+        <div class="form-group">
+          <div class="split-header">
+            <label class="form-label">分攤給誰</label>
+            <button type="button" class="split-all-btn" id="select-all-split">全選</button>
+          </div>
+          <div class="split-members" id="split-members-container"></div>
+          <p class="split-per-person" id="split-per-person"></p>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submit-expense" disabled>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          新增花費
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast hidden" id="toast">
+    <span id="toast-message"></span>
+    <button class="toast-close" id="toast-close">
+      <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <script>
+    // ==================== CONFIGURATION ====================
+    // Replace with your Google Apps Script Web App URL
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzps5anbe1Dptuh2CzHO7ZaAopvaDpKdAD9xiO1wEs113wQCfBv_eOqfnqJW5_7iRJoZw/exec';
+    
+    const STORAGE_KEY = 'travel-splitter-data';
+    const EXCHANGE_RATE_HKD_TO_JPY = 19.2;
+    
+    const CURRENCIES = {
+      JPY: { code: 'JPY', symbol: '¥', label: '日元', flag: '🇯🇵', decimals: 0 },
+      HKD: { code: 'HKD', symbol: 'HK$', label: '港元', flag: '🇭🇰', decimals: 2 }
+    };
+    
+    const CATEGORY_CONFIG = {
+      food: { label: '餐飲' },
+      transport: { label: '交通' },
+      hotel: { label: '住宿' },
+      ticket: { label: '門票' },
+      shopping: { label: '購物' },
+      other: { label: '其他' }
+    };
+    
+    const AVATAR_COLORS = [
+      'hsl(8 65% 48%)',
+      'hsl(340 55% 62%)',
+      'hsl(145 45% 42%)',
+      'hsl(38 85% 52%)',
+      'hsl(270 45% 52%)',
+      'hsl(200 55% 48%)',
+      'hsl(20 70% 55%)',
+      'hsl(170 40% 42%)'
+    ];
+
+    // ==================== STATE ====================
+    let members = [];
+    let expenses = [];
+    let currency = 'JPY';
+    let editingMemberId = null;
+
+    // ==================== UTILITY FUNCTIONS ====================
+    function generateId() {
+      return Math.random().toString(36).substring(2, 10);
+    }
+
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed.members) && Array.isArray(parsed.expenses)) {
+            members = parsed.members;
+            expenses = parsed.expenses.map(e => ({
+              ...e,
+              currency: e.currency || 'JPY'
+            }));
+            currency = parsed.currency || 'JPY';
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load data:', e);
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ members, expenses, currency }));
+    }
+
+    function convertAmount(amount, from, to) {
+      if (from === to) return amount;
+      if (from === 'HKD' && to === 'JPY') return amount * EXCHANGE_RATE_HKD_TO_JPY;
+      return amount / EXCHANGE_RATE_HKD_TO_JPY;
+    }
+
+    function formatMoney(amount, curr) {
+      const info = CURRENCIES[curr];
+      const rounded = info.decimals === 0 ? Math.round(amount) : Math.round(amount * 100) / 100;
+      return `${info.symbol}${rounded.toLocaleString(undefined, {
+        minimumFractionDigits: info.decimals,
+        maximumFractionDigits: info.decimals
+      })}`;
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toast-message');
+      
+      toast.className = `toast ${type}`;
+      toastMessage.textContent = message;
+      
+      setTimeout(() => toast.classList.remove('hidden'), 10);
+      
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 2500);
+    }
+
+    // ==================== CALCULATIONS ====================
+    function calculateSettlements() {
+      const balances = new Map();
+      const memberIds = members.map(m => m.id);
+      
+      for (const id of memberIds) {
+        balances.set(id, 0);
+      }
+      
+      for (const expense of expenses) {
+        const amountInDisplay = convertAmount(expense.amount, expense.currency, currency);
+        const sharePerPerson = amountInDisplay / expense.splitAmong.length;
+        
+        const currentPaid = balances.get(expense.paidBy) || 0;
+        balances.set(expense.paidBy, currentPaid + amountInDisplay);
+        
+        for (const personId of expense.splitAmong) {
+          const currentOwed = balances.get(personId) || 0;
+          balances.set(personId, currentOwed - sharePerPerson);
+        }
+      }
+      
+      const debtors = [];
+      const creditors = [];
+      
+      for (const [id, balance] of balances) {
+        if (balance < -0.01) {
+          debtors.push({ id, amount: -balance });
+        } else if (balance > 0.01) {
+          creditors.push({ id, amount: balance });
+        }
+      }
+      
+      debtors.sort((a, b) => b.amount - a.amount);
+      creditors.sort((a, b) => b.amount - a.amount);
+      
+      const settlements = [];
+      let i = 0, j = 0;
+      
+      while (i < debtors.length && j < creditors.length) {
+        const amount = Math.min(debtors[i].amount, creditors[j].amount);
+        
+        if (amount > 0.01) {
+          settlements.push({
+            from: debtors[i].id,
+            to: creditors[j].id,
+            amount: Math.round(amount * 100) / 100
+          });
+        }
+        
+        debtors[i].amount -= amount;
+        creditors[j].amount -= amount;
+        
+        if (debtors[i].amount < 0.01) i++;
+        if (creditors[j].amount < 0.01) j++;
+      }
+      
+      return settlements;
+    }
+
+    function getTotalExpenses() {
+      return expenses.reduce((sum, e) => sum + convertAmount(e.amount, e.currency, currency), 0);
+    }
+
+    // ==================== RENDER FUNCTIONS ====================
+    function updateStats() {
+      document.getElementById('total-expenses').textContent = formatMoney(getTotalExpenses(), currency);
+      document.getElementById('member-count').textContent = `${members.length} 人`;
+      document.getElementById('expense-count').textContent = `${expenses.length} 筆`;
+      document.getElementById('expense-total-label').textContent = `${expenses.length} 筆`;
+    }
+
+    function renderMembers() {
+      const container = document.getElementById('members-container');
+      
+      if (members.length === 0) {
+        container.innerHTML = '<p class="empty-state">還沒有成員，先加入旅伴吧</p>';
+        return;
+      }
+      
+      container.innerHTML = `<div class="members-list">${members.map((member, index) => {
+        const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
+        const isEditing = editingMemberId === member.id;
+        
+        if (isEditing) {
+          return `
+            <div class="member-tag">
+              <div class="member-avatar" style="background: ${color}">${member.name[0] || '?'}</div>
+              <input type="text" class="input" style="width: 100px; height: 1.75rem; padding: 0 0.5rem;" 
+                value="${member.name}" id="edit-member-${member.id}" autofocus>
+              <button type="button" class="member-action-btn" onclick="confirmEditMember('${member.id}')">
+                <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+            </div>
+          `;
+        }
+        
+        return `
+          <div class="member-tag">
+            <div class="member-avatar" style="background: ${color}">${member.name[0] || '?'}</div>
+            <span class="member-name">${member.name}</span>
+            <div class="member-actions">
+              <button type="button" class="member-action-btn" onclick="startEditMember('${member.id}')">
+                <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              </button>
+              <button type="button" class="member-action-btn delete" onclick="removeMember('${member.id}')">
+                <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('')}</div>`;
+      
+      // Add keydown listener for edit input
+      if (editingMemberId) {
+        const input = document.getElementById(`edit-member-${editingMemberId}`);
+        if (input) {
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') confirmEditMember(editingMemberId);
+            if (e.key === 'Escape') cancelEditMember();
+          });
+          input.addEventListener('blur', () => confirmEditMember(editingMemberId));
+          input.focus();
+        }
+      }
+    }
+
+    function renderSettlement() {
+      const section = document.getElementById('settlement-section');
+      const container = document.getElementById('settlement-container');
+      
+      if (members.length < 2 || expenses.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+      
+      section.style.display = 'block';
+      const settlements = calculateSettlements();
+      
+      if (settlements.length === 0) {
+        container.innerHTML = `
+          <div class="settled-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            <p>帳目已結清</p>
+            <span>所有人的花費平衡，無需轉帳</span>
+          </div>
+        `;
+        return;
+      }
+      
+      const memberMap = new Map(members.map((m, i) => [m.id, { ...m, index: i }]));
+      
+      container.innerHTML = settlements.map(s => {
+        const fromMember = memberMap.get(s.from);
+        const toMember = memberMap.get(s.to);
+        const fromColor = AVATAR_COLORS[fromMember.index % AVATAR_COLORS.length];
+        const toColor = AVATAR_COLORS[toMember.index % AVATAR_COLORS.length];
+        
+        return `
+          <div class="settlement-item">
+            <div class="settlement-party">
+              <div class="member-avatar" style="background: ${fromColor}">${fromMember.name[0]}</div>
+              <span class="settlement-name">${fromMember.name}</span>
+            </div>
+            <div class="settlement-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              <span class="settlement-amount">${formatMoney(s.amount, currency)}</span>
+            </div>
+            <div class="settlement-party to">
+              <span class="settlement-name">${toMember.name}</span>
+              <div class="member-avatar" style="background: ${toColor}">${toMember.name[0]}</div>
+            </div>
+          </div>
+        `;
+      }).join('') + `<p class="settlement-summary">只需 ${settlements.length} 筆轉帳即可結清所有帳目</p>`;
+    }
+
+    function renderExpenses() {
+      const container = document.getElementById('expenses-container');
+      
+      if (expenses.length === 0) {
+        container.innerHTML = '<p class="empty-state">還沒有花費記錄</p>';
+        return;
+      }
+      
+      const memberMap = new Map(members.map((m, i) => [m.id, { ...m, index: i }]));
+      
+      const categoryIcons = {
+        food: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16.2 7.8 4.6-3.7"/><path d="m15 12 3.5-3.5"/><path d="M4.9 19.1 12 12l4.6 4.6"/><path d="M12 12 2.3 2.3"/><path d="m12 12 9.7 9.7"/></svg>',
+        transport: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>',
+        hotel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/><path d="m9 16 .348-.24c1.465-1.013 3.84-1.013 5.304 0L15 16"/><path d="M8 7h.01"/><path d="M16 7h.01"/><path d="M12 7h.01"/><path d="M12 11h.01"/><path d="M16 11h.01"/><path d="M8 11h.01"/><path d="M10 22v-5.76a2 2 0 0 1 1.45-1.92l5-1.43A2 2 0 0 0 18 10.76V6"/></svg>',
+        ticket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>',
+        shopping: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+        other: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>'
+      };
+      
+      container.innerHTML = expenses.map(expense => {
+        const payer = memberMap.get(expense.paidBy);
+        const payerIndex = payer ? payer.index : 0;
+        const payerColor = AVATAR_COLORS[payerIndex % AVATAR_COLORS.length];
+        const isDifferentCurrency = expense.currency !== currency;
+        const displayAmount = convertAmount(expense.amount, expense.currency, currency);
+        
+        return `
+          <div class="expense-item">
+            <div class="expense-icon">${categoryIcons[expense.category]}</div>
+            <div class="expense-content">
+              <div class="expense-header">
+                <div>
+                  <p class="expense-title">${expense.description}</p>
+                  <p class="expense-meta">
+                    ${CATEGORY_CONFIG[expense.category].label} · 
+                    <span class="expense-payer" style="color: ${payerColor}">${payer ? payer.name : '未知'}</span> 付款
+                  </p>
+                </div>
+                <div class="expense-amount">
+                  <p class="expense-amount-main">${formatMoney(displayAmount, currency)}</p>
+                  ${isDifferentCurrency ? `<p class="expense-amount-original">${CURRENCIES[expense.currency].flag} ${formatMoney(expense.amount, expense.currency)}</p>` : ''}
+                  <p class="expense-split-count">${expense.splitAmong.length}人分</p>
+                </div>
+              </div>
+              <div class="expense-splitters">
+                ${expense.splitAmong.map(id => {
+                  const m = memberMap.get(id);
+                  const color = m ? AVATAR_COLORS[m.index % AVATAR_COLORS.length] : '#ccc';
+                  return `<div class="expense-splitter" style="background: ${color}" title="${m ? m.name : '未知'}">${m ? m.name[0] : '?'}</div>`;
+                }).join('')}
+              </div>
+            </div>
+            <button type="button" class="expense-delete" onclick="removeExpense('${expense.id}')">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateUI() {
+      updateStats();
+      renderMembers();
+      renderSettlement();
+      renderExpenses();
+      
+      // Show/hide FAB
+      document.getElementById('fab-container').style.display = members.length >= 2 ? 'block' : 'none';
+      
+      saveData();
+    }
+
+    // ==================== MEMBER ACTIONS ====================
+    function addMember(name) {
+      const newMember = {
+        id: generateId(),
+        name: name.trim(),
+        avatar: AVATAR_COLORS[members.length % AVATAR_COLORS.length]
+      };
+      members.push(newMember);
+      updateUI();
+      showToast(`${name} 已加入旅行`, 'success');
+    }
+
+    function removeMember(id) {
+      const member = members.find(m => m.id === id);
+      const hasExpenses = expenses.some(e => e.paidBy === id || e.splitAmong.includes(id));
+      
+      if (hasExpenses) {
+        showToast('此成員有相關花費，請先刪除花費記錄', 'error');
+        return;
+      }
+      
+      members = members.filter(m => m.id !== id);
+      updateUI();
+      if (member) {
+        showToast(`${member.name} 已移除`, 'success');
+      }
+    }
+
+    function startEditMember(id) {
+      editingMemberId = id;
+      renderMembers();
+    }
+
+    function confirmEditMember(id) {
+      const input = document.getElementById(`edit-member-${id}`);
+      const newName = input ? input.value.trim() : '';
+      
+      if (newName) {
+        const member = members.find(m => m.id === id);
+        if (member) {
+          member.name = newName;
+          showToast(`名字已更新為「${newName}」`, 'success');
+        }
+      }
+      
+      editingMemberId = null;
+      updateUI();
+    }
+
+    function cancelEditMember() {
+      editingMemberId = null;
+      renderMembers();
+    }
+
+    // ==================== EXPENSE ACTIONS ====================
+    function addExpense(data) {
+      const newExpense = {
+        id: generateId(),
+        ...data,
+        date: new Date().toISOString()
+      };
+      expenses.unshift(newExpense);
+      updateUI();
+      showToast(`已新增「${data.description}」`, 'success');
+    }
+
+    function removeExpense(id) {
+      expenses = expenses.filter(e => e.id !== id);
+      updateUI();
+      showToast('花費已刪除', 'success');
+    }
+
+    // ==================== MODAL FUNCTIONS ====================
+    let selectedCategory = 'food';
+    let selectedCurrency = 'JPY';
+    let selectedPaidBy = '';
+    let selectedSplitAmong = [];
+
+    function openExpenseModal() {
+      document.getElementById('expense-modal').style.display = 'flex';
+      document.getElementById('expense-form').reset();
+      selectedCategory = 'food';
+      selectedCurrency = currency;
+      selectedPaidBy = members[0]?.id || '';
+      selectedSplitAmong = members.map(m => m.id);
+      
+      updateModalUI();
+      updateSubmitButton();
+    }
+
+    function closeExpenseModal() {
+      document.getElementById('expense-modal').style.display = 'none';
+    }
+
+    function updateModalUI() {
+      // Update category buttons
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.category === selectedCategory);
+      });
+      
+      // Update currency
+      document.querySelectorAll('.currency-option').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.currency === selectedCurrency);
+      });
+      document.getElementById('currency-symbol').textContent = CURRENCIES[selectedCurrency].symbol;
+      document.getElementById('expense-amount').step = selectedCurrency === 'JPY' ? '1' : '0.01';
+      
+      // Update paid by select
+      const paidBySelect = document.getElementById('expense-paid-by');
+      paidBySelect.innerHTML = members.map(m => 
+        `<option value="${m.id}" ${m.id === selectedPaidBy ? 'selected' : ''}>${m.name}</option>`
+      ).join('');
+      
+      // Update split members
+      const splitContainer = document.getElementById('split-members-container');
+      splitContainer.innerHTML = members.map(m => {
+        const isSelected = selectedSplitAmong.includes(m.id);
+        return `<button type="button" class="split-member-btn ${isSelected ? 'active' : ''}" data-id="${m.id}">${m.name}</button>`;
+      }).join('');
+      
+      // Update per person amount
+      updatePerPersonAmount();
+    }
+
+    function updatePerPersonAmount() {
+      const amount = parseFloat(document.getElementById('expense-amount').value) || 0;
+      const perPerson = selectedSplitAmong.length > 0 ? amount / selectedSplitAmong.length : 0;
+      document.getElementById('split-per-person').textContent = 
+        selectedSplitAmong.length > 0 && amount > 0 
+          ? `每人分攤 ${formatMoney(perPerson, selectedCurrency)}`
+          : '';
+    }
+
+    function updateSubmitButton() {
+      const description = document.getElementById('expense-description').value.trim();
+      const amount = parseFloat(document.getElementById('expense-amount').value);
+      const isValid = description && !isNaN(amount) && amount > 0 && selectedPaidBy && selectedSplitAmong.length > 0;
+      document.getElementById('submit-expense').disabled = !isValid;
+    }
+
+    // ==================== SYNC TO GOOGLE SHEETS ====================
+    async function syncToGoogleSheets() {
+      const btn = document.getElementById('sync-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<svg class="icon-sm" style="animation: spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> 同步中...';
+      
+      try {
+        // Prepare data for Google Sheets
+        const memberMap = new Map(members.map((m, i) => [m.id, { ...m, index: i }]));
+        
+        // Create form data
+        const formData = new FormData();
+        formData.append('action', 'sync');
+        formData.append('timestamp', new Date().toISOString());
+        formData.append('currency', currency);
+        formData.append('members', JSON.stringify(members));
+        formData.append('expenses', JSON.stringify(expenses));
+        formData.append('settlements', JSON.stringify(calculateSettlements()));
+        
+        // Send to Google Apps Script
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showToast('已成功同步到 Google Sheets!', 'success');
+        } else {
+          throw new Error(result.message || '同步失敗');
+        }
+      } catch (error) {
+        console.error('Sync error:', error);
+        showToast('同步失敗: ' + error.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg> 同步到 Google Sheets';
+      }
+    }
+
+    // ==================== EVENT LISTENERS ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      updateUI();
+      
+      // Currency toggle in header
+      document.querySelectorAll('.currency-toggle .currency-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.currency-toggle .currency-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currency = btn.dataset.currency;
+          updateUI();
+        });
+      });
+      
+      // Add member button
+      document.getElementById('add-member-btn').addEventListener('click', () => {
+        document.getElementById('member-form-container').style.display = 'block';
+        document.getElementById('member-name-input').focus();
+      });
+      
+      // Cancel member button
+      document.getElementById('cancel-member-btn').addEventListener('click', () => {
+        document.getElementById('member-form-container').style.display = 'none';
+        document.getElementById('member-form').reset();
+      });
+      
+      // Member form submit
+      document.getElementById('member-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('member-name-input').value;
+        if (name.trim()) {
+          addMember(name.trim());
+          document.getElementById('member-form').reset();
+          document.getElementById('member-form-container').style.display = 'none';
+        }
+      });
+      
+      // Add expense button
+      document.getElementById('add-expense-btn').addEventListener('click', openExpenseModal);
+      
+      // Close modal button
+      document.getElementById('close-modal-btn').addEventListener('click', closeExpenseModal);
+      
+      // Close modal on overlay click
+      document.getElementById('expense-modal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeExpenseModal();
+      });
+      
+      // Category selection
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedCategory = btn.dataset.category;
+          document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+      
+      // Currency selection in modal
+      document.querySelectorAll('.currency-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedCurrency = btn.dataset.currency;
+          document.querySelectorAll('.currency-option').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById('currency-symbol').textContent = CURRENCIES[selectedCurrency].symbol;
+          document.getElementById('expense-amount').step = selectedCurrency === 'JPY' ? '1' : '0.01';
+          updatePerPersonAmount();
+        });
+      });
+      
+      // Paid by selection
+      document.getElementById('expense-paid-by').addEventListener('change', (e) => {
+        selectedPaidBy = e.target.value;
+        updateSubmitButton();
+      });
+      
+      // Split members selection (delegation)
+      document.getElementById('split-members-container').addEventListener('click', (e) => {
+        const btn = e.target.closest('.split-member-btn');
+        if (!btn) return;
+        
+        const id = btn.dataset.id;
+        if (selectedSplitAmong.includes(id)) {
+          selectedSplitAmong = selectedSplitAmong.filter(x => x !== id);
+          btn.classList.remove('active');
+        } else {
+          selectedSplitAmong.push(id);
+          btn.classList.add('active');
+        }
+        
+        updatePerPersonAmount();
+        updateSubmitButton();
+      });
+      
+      // Select all split
+      document.getElementById('select-all-split').addEventListener('click', () => {
+        selectedSplitAmong = members.map(m => m.id);
+        document.querySelectorAll('.split-member-btn').forEach(btn => btn.classList.add('active'));
+        updatePerPersonAmount();
+        updateSubmitButton();
+      });
+      
+      // Amount input
+      document.getElementById('expense-amount').addEventListener('input', () => {
+        updatePerPersonAmount();
+        updateSubmitButton();
+      });
+      
+      // Description input
+      document.getElementById('expense-description').addEventListener('input', updateSubmitButton);
+      
+      // Expense form submit
+      document.getElementById('expense-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const description = document.getElementById('expense-description').value.trim();
+        const amount = parseFloat(document.getElementById('expense-amount').value);
+        
+        if (!description || isNaN(amount) || amount <= 0 || !selectedPaidBy || selectedSplitAmong.length === 0) {
+          return;
+        }
+        
+        addExpense({
+          description,
+          amount,
+          currency: selectedCurrency,
+          paidBy: selectedPaidBy,
+          splitAmong: [...selectedSplitAmong],
+          category: selectedCategory
+        });
+        
+        closeExpenseModal();
+      });
+      
+      // Sync button
+      document.getElementById('sync-btn').addEventListener('click', syncToGoogleSheets);
+      
+      // Toast close
+      document.getElementById('toast-close').addEventListener('click', () => {
+        document.getElementById('toast').classList.add('hidden');
+      });
+      
+      // Add spin animation for sync button
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `;
+      document.head.appendChild(style);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Japanese Warm Palette — Sakura, Matcha, Amber */
+    --background: 30 40% 97%;
+    --foreground: 20 20% 18%;
+
+    --card: 30 30% 99%;
+    --card-foreground: 20 20% 18%;
+
+    --popover: 30 30% 99%;
+    --popover-foreground: 20 20% 18%;
+
+    /* Warm Terracotta / Vermillion Primary — inspired by torii gates */
+    --primary: 8 65% 48%;
+    --primary-foreground: 35 60% 97%;
+    --primary-glow: 12 60% 60%;
+
+    /* Warm Cream Secondary */
+    --secondary: 35 45% 93%;
+    --secondary-foreground: 20 20% 18%;
+
+    --muted: 30 30% 92%;
+    --muted-foreground: 20 12% 50%;
+
+    /* Sakura Pink Accent */
+    --accent: 340 55% 62%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 145 45% 42%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 85% 52%;
+    --warning-foreground: 20 20% 18%;
+
+    --border: 30 25% 88%;
+    --input: 30 25% 88%;
+    --ring: 8 65% 48%;
+    --radius: 0.75rem;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(8 65% 48%), hsl(12 60% 60%));
+    --gradient-hero: linear-gradient(135deg, hsl(20 35% 22%), hsl(8 40% 28%));
+    --gradient-accent: linear-gradient(135deg, hsl(340 55% 62%), hsl(350 60% 58%));
+    --gradient-card: linear-gradient(180deg, hsl(30 30% 99%), hsl(30 40% 96%));
+
+    /* Shadows — warm-tinted */
+    --shadow-elegant: 0 10px 30px -10px hsl(8 65% 48% / 0.18);
+    --shadow-glow: 0 0 30px hsl(12 60% 60% / 0.15);
+    --shadow-card: 0 1px 3px hsl(20 20% 18% / 0.05), 0 4px 12px hsl(20 20% 18% / 0.03);
+    --shadow-card-hover: 0 4px 16px hsl(20 20% 18% / 0.08), 0 8px 32px hsl(20 20% 18% / 0.05);
+
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  .gradient-accent {
+    background: var(--gradient-accent);
+  }
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+  .shadow-card-interactive {
+    box-shadow: var(--shadow-card);
+    transition: var(--transition-smooth);
+  }
+  .shadow-card-interactive:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-1px);
+  }
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+}
+
+/* Custom scrollbar — warm tinted */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.25);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.45);
+}
